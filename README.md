@@ -12,6 +12,8 @@
 > blocks, `read_image` — and let a **local vision bridge** do the seeing for text-only models,
 > transparently, at the request layer. One system, not two.
 
+**English** · [简体中文](README.zh-CN.md)
+
 ---
 
 ## Table of Contents
