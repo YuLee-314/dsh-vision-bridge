@@ -194,7 +194,7 @@ structured_scan ──► element list with bboxes (heading/table/chart/button/�
 # 2. Install the plugin (any form works)
 dsh plugin --profile web add .\dsh-external-dsh-vision-bridge-2.0.0.tgz   # tarball
 #   dsh plugin --profile web add <directory>                             # checkout
-#   dsh plugin --profile web add <git-repo> | <npm-package>              # remote
+#   dsh plugin --profile web add @yulee314/dsh-vision-bridge            # npm
 
 # 3. Restart dsh web (bundle layers load at boot)
 ```

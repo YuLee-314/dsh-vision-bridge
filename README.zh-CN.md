@@ -184,7 +184,7 @@ structured_scan ──► 带 bbox 的元素清单（heading/table/chart/button/
 # 2. 安装插件（任选一种形式）
 dsh plugin --profile web add .\dsh-external-dsh-vision-bridge-2.0.0.tgz   # tarball
 #   dsh plugin --profile web add <包目录>                                # 本地 checkout
-#   dsh plugin --profile web add <git 仓库> | <npm 包>                   # 远程
+#   dsh plugin --profile web add @yulee314/dsh-vision-bridge            # npm
 
 # 3. 重启 dsh web（bundle 层在启动时加载）
 ```
