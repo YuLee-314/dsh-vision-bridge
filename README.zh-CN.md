@@ -1,6 +1,6 @@
 # dsh-vision-bridge
 
-**为 DeepSeek Harness 中的纯文本模型解锁原生图片体验与智能体视觉。**
+一个 DeepSeek Harness 插件：让纯文本模型也能接收并理解图片，视觉工作由本机模型完成。
 
 [![Plugin](https://img.shields.io/badge/dsh-bundle%20plugin-blue)](https://github.com/deepseek-ai/deepseek-harness)
 [![Version](https://img.shields.io/badge/version-2.0.0-green)](#)
@@ -8,15 +8,27 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D22.19-43853d)](#)
 [![Platform](https://img.shields.io/badge/platform-win%20%7C%20macOS%20%7C%20linux-lightgrey)](#)
 
-> DeepSeek 继续当大脑。解锁 Harness 的**原生图片管线**——粘贴、缩略图、图片块、`read_image`——
-> 再由**本地视觉桥**在请求层透明地替纯文本模型"看见"。一个系统，不是两个。
-
 [English](README.md) · **简体中文**
 
 ---
 
+## 这是什么？
+
+DeepSeek Harness（dsh）是一个开源的 AI 编程环境，所有组件都是插件。它的对话模型——`deepseek-v4-flash` 和 `deepseek-v4-pro`——是**纯文本模型**：API 不接受图片数据。所以在 Harness 里，你没法给它们粘贴截图、在消息里附图片，也不能用自带的 `read_image` 工具。
+
+这个插件解决这件事，分三层：
+
+1. **一条接受图片的模型路由。** 同一个 DeepSeek 模型以"孪生"provider（`deepseek-vision`）再注册一份，并声明支持图片。于是正常的图片功能都能用：粘贴出现缩略图和图片块，`read_image` 也放行。在请求真正发给 DeepSeek API 之前，插件会把对话里的每张图片先交给本机视觉模型，转成文字描述。API 永远只收到文本；模型回答起来就像真的看过图。
+2. **九个检查工具。** `describe_image`、`extract_text`、`structured_scan`、`query_region`、`detect_elements`、`locate_object`、`compare_images`、`read_clipboard`、`check_health`——模型可以按不同粒度查看图片：从整体描述到每个元素的具体坐标；你也可以在对话里直接使用。
+3. **粘贴分流。** 粘贴图片时，浏览器端的一个小组件会先问服务器：当前模型能不能处理图片？能（孪生路由）就保留为正常图片；不能（官方纯文本路由）就把图片存成本地私有文件，把路径作为文本插入，供检查工具读取。
+
+视觉模型（Ollama + `qwen2.5vl`）跑在你自己机器上。图片字节不会发给 DeepSeek API，也不会发给任何云端视觉服务。
+
+如果你只用官方路由，这个插件依然有用：粘贴的图片会变成本地路径，检查工具可以读取。如果你只需要工具，也可以完全忽略孪生路由。
+
 ## 目录
 
+- [这是什么](#这是什么)
 - [解决的问题](#解决的问题)
 - [解决方案](#解决方案)
 - [功能特性](#功能特性)
@@ -65,13 +77,13 @@ DeepSeek 旗舰对话模型（`deepseek-v4-flash`、`deepseek-v4-pro`）是**纯
 
 - **纯文本模型的原生图片体验**——粘贴截图 → 缩略图、图片块、真正"看见"的 DeepSeek，全程没有
   一个图片字节到达 API。
-- **零云端 key**——视觉引擎是本地 Ollama（`qwen2.5vl`）；孪生复用你已有的 `DEEPSEEK_API_KEY`
+- **不需要任何云端 key**——视觉引擎是本地 Ollama（`qwen2.5vl`）；孪生复用你已有的 `DEEPSEEK_API_KEY`
   凭据，解析逻辑与官方路由完全同源。
 - **请求层透明**——无提示词 hack、无 preset fork、无可能竞态的动态注入；拦截发生在适配器内，
   每个请求恰好一次。
-- **证据级结构化视觉**——元素边界框（`[0,1000]` 归一化）、区域真裁剪、两级定位、双图对比、
+- **带坐标的结构化输出**——元素边界框（`[0,1000]` 归一化）、区域真裁剪、两级定位、双图对比、
   剪贴板读取、schema 校验输出 + 格式错误自动重试。
-- **缓存中性**——重复图片命中内容哈希缓存：零额外推理，前缀缓存行为稳定。
+- **重复图片自动缓存**——重复图片命中内容哈希缓存：零额外推理，前缀缓存行为稳定。
 - **自包含、可分发**——单个 29KB tarball，无任何本机路径依赖；任何机器 `dsh plugin --profile web add` 即装。
 - **与官方路由共存**——官方 provider 原样保留作兜底；粘贴判定按会话、按实时元数据决定走哪条流。
 

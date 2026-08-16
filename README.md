@@ -1,6 +1,6 @@
 # dsh-vision-bridge
 
-**Native image experience + agentic vision for text-only models in DeepSeek Harness.**
+A DeepSeek Harness plugin that lets text-only models receive and understand images. The vision work is done by a local model on your machine.
 
 [![Plugin](https://img.shields.io/badge/dsh-bundle%20plugin-blue)](https://github.com/deepseek-ai/deepseek-harness)
 [![Version](https://img.shields.io/badge/version-2.0.0-green)](#)
@@ -8,16 +8,27 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D22.19-43853d)](#)
 [![Platform](https://img.shields.io/badge/platform-win%20%7C%20macOS%20%7C%20linux-lightgrey)](#)
 
-> Keep DeepSeek as the brain. Unlock Harness's **native image pipeline** — paste, thumbnails, image
-> blocks, `read_image` — and let a **local vision bridge** do the seeing for text-only models,
-> transparently, at the request layer. One system, not two.
-
 **English** · [简体中文](README.zh-CN.md)
 
 ---
 
+## What is this?
+
+DeepSeek Harness (dsh) is an open-source AI coding environment built entirely from plugins. Its chat models — `deepseek-v4-flash` and `deepseek-v4-pro` — are **text-only**: their API rejects image data. As a result, in Harness you cannot paste a screenshot into a session that uses them, attach an image to a message, or use the built-in `read_image` tool.
+
+This plugin fixes that. It works in three layers:
+
+1. **A second model route that accepts images.** The same DeepSeek models are registered again as a "twin" provider (`deepseek-vision`). Because the twin declares image support, the normal image features work: pasting produces a thumbnail and an image block, and `read_image` is allowed. Before each request is sent to the DeepSeek API, the plugin converts every image in the conversation into a text description produced by a local vision model. The API only ever receives text; the model answers as if it had seen the image.
+2. **Nine inspection tools.** `describe_image`, `extract_text`, `structured_scan`, `query_region`, `detect_elements`, `locate_object`, `compare_images`, `read_clipboard`, and `check_health` let the model look at an image at different levels of detail — from a general description down to per-element coordinates — and let you do the same through chat.
+3. **Paste routing.** When you paste an image, a small browser component asks the server whether the current model can handle images. If yes (twin route), the paste stays a normal image. If no (official text-only route), the image is saved to a private local file and the path is inserted as text, which the inspection tools can then read.
+
+The vision model (Ollama + `qwen2.5vl`) runs on your machine. No image bytes are ever sent to DeepSeek's API or to any cloud vision service.
+
+If you only use the official route, the plugin still helps: pasted images become local paths and the inspection tools work on them. If you only want the tools, you can ignore the twin route entirely.
+
 ## Table of Contents
 
+- [What is this?](#what-is-this)
 - [The Problem](#the-problem)
 - [The Solution](#the-solution)
 - [Features](#features)
@@ -71,14 +82,14 @@ One self-contained plugin, three cooperating layers:
 
 - **Native image experience for text-only models** — paste a screenshot, get a thumbnail, image
   block, and a DeepSeek that actually saw it, without a single image byte ever reaching the API.
-- **Zero cloud keys** — the vision engine is local Ollama (`qwen2.5vl`); the twin reuses your
+- **No cloud keys required** — the vision engine is local Ollama (`qwen2.5vl`); the twin reuses your
   existing `DEEPSEEK_API_KEY` credential with the official route's own resolution logic.
 - **Request-layer transparency** — no prompt hacks, no preset forks, no dynamic injection that can
   race; the interception happens in the adapter, exactly once, per request.
-- **Evidence-grade structured vision** — element bounding boxes (`[0,1000]` normalized), region
+- **Structured output with coordinates** — element bounding boxes (`[0,1000]` normalized), region
   cropping, two-stage localization, image comparison, clipboard reads, schema-validated output
   with automatic retry on malformed responses.
-- **Cache-neutral** — repeated images hit the content-hash cache: zero extra inference, stable
+- **Repeated images are cached** — repeated images hit the content-hash cache: zero extra inference, stable
   prefix-cache behavior.
 - **Self-contained & distributable** — a single 29 KB tarball with no machine-specific paths;
   installs on any Harness via `dsh plugin --profile web add`.
