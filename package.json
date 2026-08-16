@@ -41,5 +41,8 @@
   },
   "scripts": {
     "sync:core": "node scripts/sync-core.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
