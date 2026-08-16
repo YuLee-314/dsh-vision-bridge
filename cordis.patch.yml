@@ -1,0 +1,7 @@
+# dsh-vision-bridge bundle layer: mount the native vision plugin.
+# The vision logic lives in this package's lib/core/vision-core.mjs
+# (self-contained snapshot, synced via scripts/sync-core.mjs); this row only
+# adapts it to ctx.tools.
+- insert:
+    - id: vision-bridge
+      name: '@dsh-external/dsh-vision-bridge'

@@ -1,0 +1,44 @@
+{
+  "name": "@dsh-external/dsh-vision-bridge",
+  "version": "2.0.0",
+  "description": "自包含的 DeepSeek Harness 视觉系统：DeepSeek 视觉孪生路由（原生图片体验 + 视觉桥请求层拦截）+ 本地 Ollama Agentic Vision 工具（describe/OCR/结构化扫描/区域查询/元素定位/双图对比/剪贴板）+ 粘贴分流（paste-to-path）。安装即用，无本机路径依赖。",
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": "./client.js",
+    "./deepseek-vision": "./lib/deepseek-vision.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "client.js",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.19"
+  },
+  "dependencies": {
+    "openai": "^4.76.0",
+    "sharp": "^0.35.3"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [],
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "scripts": {
+    "sync:core": "node scripts/sync-core.mjs"
+  }
+}
